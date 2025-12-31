@@ -22,14 +22,12 @@ class Lock(BaseModel, validate_assignment=True):
     Attributes:
         value (Any): The value of the lock.
         is_locked (bool | None): Whether the lock is active or not.
-        is_hard_lock (bool | None): Whether the lock is a hard lock or a soft lock.
         mode (LockMode | None): The mode of the lock.
         comments (str | None): Comments about the lock.
     """
 
     value: Any
     is_locked: bool | None = True
-    is_hard_lock: bool | None = True
     mode: LockMode | None = LockMode.EXACT
     comments: str | None = ''
     owner: str | None = None
@@ -85,7 +83,6 @@ class Locker:
         self,
         attribute: str,
         value: Any = None,
-        is_hard_lock: bool = True,
         is_locked: bool = True,
         mode: LockMode = LockMode.EXACT,
         comments: str = '',
@@ -96,7 +93,6 @@ class Locker:
         Args:
             attribute (str): The attribute to lock.
             value (Any): The value of the lock.
-            is_hard_lock (bool): Whether the lock is a hard lock or a soft lock
             is_locked (bool): Whether the lock is active or not.
             mode (LockMode): The mode of the lock.
             comments (str): Comments about the lock.
@@ -106,7 +102,6 @@ class Locker:
 
         lock = Lock(
             value=value,
-            is_hard_lock=is_hard_lock,
             mode=mode,
             is_locked=is_locked,
             comments=comments,
@@ -140,7 +135,6 @@ class Locker:
         self,
         attribute: str,
         value: Any,
-        is_hard_lock: bool = True,
         requester: str | None = None,
         is_ignore_owner: bool = False,
     ) -> bool:
@@ -149,7 +143,6 @@ class Locker:
         Args:
             attribute (str): The attribute to check.
             value (Any): The value to check against the lock.
-            is_hard_lock (bool): Whether to check for hard locks only.
 
         Returns:
             bool: True if the change is allowed, False otherwise.
@@ -172,10 +165,7 @@ class Locker:
                 return False
 
         # If it is locked and you are the owner, make sure the provided value is valid based on the lock mode
-        if lock.is_hard_lock is True or is_hard_lock is False:
-            return self.is_valid_value(lock, value)
-
-        return True
+        return self.is_valid_value(lock, value)
 
     def has_attribute(self, attribute: str):
         """Checks if the lock has a specific attribute.
